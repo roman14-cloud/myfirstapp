@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.myfirstapp.navigations.ROUTE_ADDPRODUCT
 import com.example.myfirstapp.viewModel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -134,9 +135,9 @@ fun Dashboardscreen(navController: NavHostController){
             }
             Row() {
                 DashboarCard(
-                    title = "product list",
+                    title = "addproduct",
                     background = Color.Green,
-                    onClick = { }
+                    onClick = {navController.navigate(ROUTE_ADDPRODUCT)}
                 )
                 DashboarCard(
                     title = "settings",
@@ -164,7 +165,7 @@ fun DashboarCard(title:String,
             .height(150.dp)
             .width(150.dp)
             .padding(8.dp)
-            .clickable { (onClick) },
+            .clickable { onClick() },
         colors  = CardDefaults.cardColors(containerColor = background) ,
                 elevation = CardDefaults . cardElevation (defaultElevation = 10.dp),
         shape=RoundedCornerShape(10.dp)
