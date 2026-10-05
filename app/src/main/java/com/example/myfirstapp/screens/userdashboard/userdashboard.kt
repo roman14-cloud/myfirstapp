@@ -37,9 +37,7 @@ fun UserDashboard(navController: NavHostController) {
         bottomBar = {
             NavigationBar(
                 containerColor = Color.Cyan
-            ) {
-
-                NavigationBarItem(
+            ) { NavigationBarItem(
                     selected = true,
                     onClick = {},
                     icon = {
