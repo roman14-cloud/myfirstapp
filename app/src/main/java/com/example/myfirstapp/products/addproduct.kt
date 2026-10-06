@@ -39,14 +39,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.myfirstapp.R
 import coil.compose.AsyncImage
+import com.example.myfirstapp.R
+import com.example.myfirstapp.viewModel.productviewmodel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -133,8 +135,24 @@ fun AddProductScreen(navController: NavHostController = rememberNavController())
                     {imagePickerLauncher.launch("image/*")}) { Text("Select an Image") }
 
                 // Product Button
+                val context = LocalContext.current
+                val myproductviewmodel = productviewmodel(navController, context)
                 Button(
-                    onClick = {},
+                    onClick = {
+                        myproductviewmodel.addproduct(
+                        name = ProductName,
+                        description=description,
+                        price=price,
+                        imageuri=imageUri
+                        )
+                        //clear outlined textfields
+                        ProductName = ""
+                        description = ""
+                        price = ""
+                        imageUri = null
+
+                    },
+
                     modifier = Modifier.fillMaxWidth()
                 ) { Text("AddProduct") }
             }

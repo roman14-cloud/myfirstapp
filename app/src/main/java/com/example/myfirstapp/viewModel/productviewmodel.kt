@@ -4,12 +4,12 @@ import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import androidx.navigation.NavHostController
+import com.example.myfirstapp.navigations.ROUTE_PRODUCTLIST
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -25,7 +25,19 @@ class productviewmodel(var navController: NavHostController, var context: Contex
     // functions
     // crud
     // create/upload product to firebase realtime database
-    fun addproduct(productname: String, productdescription: String, productprice: String, imageuri: Uri?) {
+    fun addproduct(
+        productname: String = "",
+        productdescription: String = "",
+        productprice: String = "",
+        imageuri: Uri? = null,
+        name: String = productname,
+        description: String = productdescription,
+        price: String = productprice
+    ) {
+        val finalName = if (name.isNotEmpty()) name else productname
+        val finalDescription = if (description.isNotEmpty()) description else productdescription
+        val finalPrice = if (price.isNotEmpty()) price else productprice
+
         val ref = databaseReference.push()
         val currentUser = FirebaseAuth.getInstance().currentUser
         val userId = currentUser?.uid ?: ""
@@ -40,22 +52,29 @@ class productviewmodel(var navController: NavHostController, var context: Contex
                 // product data to be stored in realtime database
                 val productData = mapOf(
                     "id" to ref.key,
-                    "name" to productname,
-                    "description" to productdescription,
-                    "price" to productprice,
+                    "name" to finalName,
+                    "description" to finalDescription,
+                    "price" to finalPrice,
                     "userid" to userId,
                     "imageurl" to imageUrl
                 )
-
                 ref.setValue(productData).addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        Toast.makeText(context, "Product added successfully", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(context, "Failed to save product: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                    CoroutineScope(Dispatchers.Main).launch {
+                        if (task.isSuccessful) {
+                            Toast.makeText(context, "Product added successfully", Toast.LENGTH_SHORT).show()
+                            //navigate to productlist
+                            navController.navigate(ROUTE_PRODUCTLIST)
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Error: ${task.exception?.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
+                CoroutineScope(Dispatchers.Main).launch {
                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -63,15 +82,25 @@ class productviewmodel(var navController: NavHostController, var context: Contex
     }
 
     // Alias for addproduct to handle typo
-    fun adddproduct(productname: String, productdescription: String, productprice: String, imageuri: Uri?) {
-        addproduct(productname, productdescription, productprice, imageuri)
+    fun adddproduct(
+        productname: String = "",
+        productdescription: String = "",
+        productprice: String = "",
+        imageuri: Uri? = null,
+        name: String = productname,
+        description: String = productdescription,
+        price: String = productprice
+    ) {
+        addproduct(productname, productdescription, productprice, imageuri, name, description, price)
     }
 
     // upload image to cloudinary function
     private fun uploadToCloudinary(context: Context, uri: Uri): String {
+        //get selected image
         val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
+        //convert images to bytes
         val fileBytes = inputStream?.use { it.readBytes() } ?: throw Exception("Failed to read image data")
-
+//create multipart request body
         val requestBody = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart(

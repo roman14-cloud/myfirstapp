@@ -48,6 +48,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.myfirstapp.navigations.ROUTE_ADDPRODUCT
+import com.example.myfirstapp.navigations.ROUTE_PRODUCTLIST
+import com.example.myfirstapp.navigations.ROUTE_UPDATEPRODUCT
 import com.example.myfirstapp.viewModel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -122,14 +124,14 @@ fun Dashboardscreen(navController: NavHostController){
             //row
             Row() {
                 DashboarCard(
-                    title = "firstapp",
+                    title = "Update product",
                     background = Color.White,
-                    onClick = { }
+                    onClick = {navController.navigate(ROUTE_UPDATEPRODUCT) }
                 )
                 DashboarCard(
-                    title = "profile",
-                    background = Color.LightGray,
-                    onClick = { }
+                    title = "product list",
+                    background = Color(0xFF2C3030),
+                    onClick = {navController.navigate(ROUTE_PRODUCTLIST) }
                 )
 
             }
