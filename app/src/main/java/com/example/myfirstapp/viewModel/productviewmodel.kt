@@ -24,7 +24,7 @@ class productviewmodel(var navController: NavHostController, var context: Contex
 
     // functions
     // crud
-    // create/upload product to firebase realtime database
+    // C-create/upload product to firebase realtime database
     fun addproduct(
         productname: String = "",
         productdescription: String = "",
@@ -125,5 +125,20 @@ class productviewmodel(var navController: NavHostController, var context: Contex
         val responseBody = response.body?.string()
         val secureUrl = Regex("secure_url\":\"(.*?)\"").find(responseBody ?: "")?.groupValues?.get(1)
         return secureUrl ?: throw Exception("Failed to get image url")
+    }
+    //r-read product from db
+    //fetch products from firebase realtime database
+    fun allProducts(){
+
+    }
+    //u-update product
+    //update existing products in firebase realtime database
+    fun updateProduct(){
+
+    }
+    //d-delete product
+    //delete product from firebase realtime database
+    fun deleteProduct(){
+
     }
 }
