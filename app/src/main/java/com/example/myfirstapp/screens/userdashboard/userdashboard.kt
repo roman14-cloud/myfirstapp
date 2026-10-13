@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -20,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -74,8 +76,16 @@ fun UserDashboard(navController: NavHostController) {
                 title = { Text("userdashboard") },
                 colors = topAppBarColors(
                     containerColor = Color(0xFF27F531),
-                    titleContentColor = Color.Black
-                )
+                    titleContentColor = Color.Black,
+                ),
+                actions = {
+                    IconButton(onClick = {myauthviewmodel.signout()}) {
+                        Icon(
+                            imageVector = Icons.Default.ExitToApp,
+                            contentDescription = "logout"
+                        )
+                    }
+                }
             )
         },
 
