@@ -3,13 +3,20 @@ package com.example.myfirstapp.viewModel
 import android.content.Context
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.navigation.NavHostController
+import com.example.myfirstapp.models.product
 import com.example.myfirstapp.navigations.ROUTE_PRODUCTLIST
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -20,23 +27,13 @@ import java.io.InputStream
 class productviewmodel(var navController: NavHostController, var context: Context) {
     val cloudinaryUrl = "https://api.cloudinary.com/v1_1/aep2jnow/upload"
     val uploadPreset = "products"
-    val databaseReference = FirebaseDatabase.getInstance().getReference("products")
+    val databaseReference by lazy { FirebaseDatabase.getInstance().getReference("products") }
 
     // functions
     // crud
     // C-create/upload product to firebase realtime database
-    fun addproduct(
-        productname: String = "",
-        productdescription: String = "",
-        productprice: String = "",
-        imageuri: Uri? = null,
-        name: String = productname,
-        description: String = productdescription,
-        price: String = productprice
+    fun addproduct(name: String = "", description: String = "", price: String = "", imageUri: Uri?,
     ) {
-        val finalName = if (name.isNotEmpty()) name else productname
-        val finalDescription = if (description.isNotEmpty()) description else productdescription
-        val finalPrice = if (price.isNotEmpty()) price else productprice
 
         val ref = databaseReference.push()
         val currentUser = FirebaseAuth.getInstance().currentUser
@@ -44,19 +41,19 @@ class productviewmodel(var navController: NavHostController, var context: Contex
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val imageUrl = if (imageuri != null) {
-                    uploadToCloudinary(context = context, uri = imageuri)
+                val imageUrl = if (imageUri != null) {
+                    uploadToCloudinary(context = context, uri = imageUri)
                 } else {
                     ""
                 }
                 // product data to be stored in realtime database
                 val productData = mapOf(
                     "id" to ref.key,
-                    "name" to finalName,
-                    "description" to finalDescription,
-                    "price" to finalPrice,
+                    "name" to name,
+                    "description" to description,
+                    "price" to price,
                     "userid" to userId,
-                    "imageurl" to imageUrl
+                    "imageUrl" to imageUrl
                 )
                 ref.setValue(productData).addOnCompleteListener { task ->
                     CoroutineScope(Dispatchers.Main).launch {
@@ -80,20 +77,6 @@ class productviewmodel(var navController: NavHostController, var context: Contex
             }
         }
     }
-
-    // Alias for addproduct to handle typo
-    fun adddproduct(
-        productname: String = "",
-        productdescription: String = "",
-        productprice: String = "",
-        imageuri: Uri? = null,
-        name: String = productname,
-        description: String = productdescription,
-        price: String = productprice
-    ) {
-        addproduct(productname, productdescription, productprice, imageuri, name, description, price)
-    }
-
     // upload image to cloudinary function
     private fun uploadToCloudinary(context: Context, uri: Uri): String {
         //get selected image
@@ -115,30 +98,80 @@ class productviewmodel(var navController: NavHostController, var context: Contex
             .url(cloudinaryUrl)
             .post(requestBody)
             .build()
-
         val response = OkHttpClient().newCall(request).execute()
-
         if (!response.isSuccessful) {
-            throw Exception("Failed to upload image: ${response.message}")
-        }
-
+            throw Exception("Failed to upload image: ${response.message}")}
         val responseBody = response.body?.string()
         val secureUrl = Regex("secure_url\":\"(.*?)\"").find(responseBody ?: "")?.groupValues?.get(1)
         return secureUrl ?: throw Exception("Failed to get image url")
     }
     //r-read product from db
     //fetch products from firebase realtime database
-    fun allProducts(){
+    fun allProducts(products: SnapshotStateList<product>){
+        databaseReference.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                products.clear()
+                for (snap in snapshot.children) {
+                    val retrivedProduct = snap.getValue(product::class.java)
+                    if (retrivedProduct != null) {
+                        if (retrivedProduct.id.isNullOrEmpty()) {
+                            retrivedProduct.id = snap.key
+                        }
+                        products.add(retrivedProduct)
+                    }
+                }
+            }
 
-    }
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(context, "database error", Toast.LENGTH_SHORT).show()
+            }
+        })
+        }
+
+
+
     //u-update product
     //update existing products in firebase realtime database
-    fun updateProduct(){
+    fun updateProduct(productId: String, name: String, description: String, price: String, imageUri: Uri?) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val newImageUrl = imageUri?.let { uploadToCloudinary(context = context, uri = it) }
+                val currentUser = FirebaseAuth.getInstance().currentUser
+                val userId = currentUser?.uid ?: ""
+                val updates = mutableMapOf<String, Any>(
+                    "id" to productId,
+                    "name" to name,
+                    "description" to description,
+                    "price" to price,
+                    "userid" to userId
+                )
+                if (!newImageUrl.isNullOrEmpty()) {
+                    updates["imageUrl"] = newImageUrl
+                }
+                databaseReference.child(productId).updateChildren(updates).await()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "product updated successfully", Toast.LENGTH_SHORT)
+                        .show()
+                    navController.navigate(ROUTE_PRODUCTLIST)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "product update failed", Toast.LENGTH_SHORT).show()
+                }
+            }
 
+        }
     }
+
     //d-delete product
     //delete product from firebase realtime database
-    fun deleteProduct(){
-
+    fun deleteProduct(productId: String) {
+        databaseReference.child(productId).removeValue().addOnCompleteListener {
+            Toast.makeText(context, "product deleted successfully", Toast.LENGTH_SHORT).show()
+        }
+            .addOnFailureListener {
+                Toast.makeText(context, "product deletion failed", Toast.LENGTH_SHORT).show()
+            }
     }
 }
+

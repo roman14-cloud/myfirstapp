@@ -60,8 +60,9 @@ fun AppNavHost(
             productlistScreen(navController)
         }
 
-        composable(ROUTE_UPDATEPRODUCT) {
-            updateproductScreen(navController)
+        composable(ROUTE_UPDATEPRODUCT + "/{productId}") { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId") ?: ""
+            updateproductScreen(navController, productId = productId)
         }
     }
 }

@@ -143,7 +143,7 @@ fun AddProductScreen(navController: NavHostController = rememberNavController())
                         name = ProductName,
                         description=description,
                         price=price,
-                        imageuri=imageUri
+                        imageUri=imageUri
                         )
                         //clear outlined textfields
                         ProductName = ""

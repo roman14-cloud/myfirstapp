@@ -1,6 +1,5 @@
 package com.example.myfirstapp.products
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,19 +25,25 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.myfirstapp.R
+import coil.compose.AsyncImage
 import com.example.myfirstapp.models.product
 import com.example.myfirstapp.navigations.ROUTE_ADDPRODUCT
+import com.example.myfirstapp.navigations.ROUTE_UPDATEPRODUCT
+import com.example.myfirstapp.viewModel.productviewmodel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,13 +74,23 @@ fun productlistScreen(navController: NavHostController = rememberNavController()
             }
         }
     ) { innerPadding ->
-        val products = listOf(
-            product("1", "dog", "a dog", "6000", R.drawable.dog.toString()),
-            product("2", "free", "a logo", "5000", R.drawable.free.toString()),
-            product("3", "nat", "a nature picture", "7000", R.drawable.nat.toString()),
-            product("4", "onboard1", "onboard1", "3000", R.drawable.onboard1.toString()),
-            )
+        val context = LocalContext.current
+        val isPreview = LocalInspectionMode.current
+        val myproductviewmodel = productviewmodel(navController, context)
+        val products = remember {
+            if (isPreview) {
+                mutableStateListOf(product("1", "Sample Product", "Sample Description", "100", ""))
+            } else {
+                mutableStateListOf<product>()
+            }
+        }
 
+        // Check if in preview mode to avoid uninitialized FirebaseApp exception during render
+        if (!isPreview) {
+            LaunchedEffect(Unit) {
+                myproductviewmodel.allProducts(products)
+            }
+        }
 
 //lazy column
         LazyColumn(
@@ -102,8 +117,8 @@ fun productlistScreen(navController: NavHostController = rememberNavController()
 
                 ) {
                     //productimage
-                    Image(
-                        painter = painterResource(id = item.imageURL!!.toInt()),
+                    AsyncImage(
+                        model = item.imageUrl,
                         contentDescription = "product image",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -131,7 +146,10 @@ fun productlistScreen(navController: NavHostController = rememberNavController()
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ){
-                        Button(onClick = {},colors = ButtonDefaults.buttonColors(
+                        Button(onClick = {
+                            myproductviewmodel.deleteProduct(item.id!!)
+                        }
+                            ,colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Red),
                                 modifier = Modifier.weight(1f))
                         {
@@ -139,8 +157,9 @@ fun productlistScreen(navController: NavHostController = rememberNavController()
                         }
 
 
-                        Button(onClick = {},colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Green),
+                        Button(onClick = { navController.navigate(ROUTE_UPDATEPRODUCT + "/" + item.id) }
+                            ,colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Gray),
                             modifier = Modifier.weight(1f))
                         {
                             Text(text = "Update", fontWeight = FontWeight.Bold)
