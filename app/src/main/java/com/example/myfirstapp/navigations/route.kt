@@ -9,3 +9,6 @@ const val ROUTE_USERDASHBOARD = "userdashboard"
 const val ROUTE_ADDPRODUCT = "addproduct"
 const val ROUTE_PRODUCTLIST = "productlist"
 const val ROUTE_UPDATEPRODUCT = "updateproduct"
+
+const val ROUTE_INTENT = "intent"
+

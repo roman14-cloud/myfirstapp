@@ -10,6 +10,7 @@ import com.example.myfirstapp.products.productlistScreen
 import com.example.myfirstapp.products.updateproductScreen
 import com.example.myfirstapp.screens.addproduct.AddProductScreen
 import com.example.myfirstapp.screens.dashboard.Dashboardscreen
+import com.example.myfirstapp.screens.demo.Intentscreen
 import com.example.myfirstapp.screens.login.LoginScreen
 import com.example.myfirstapp.screens.onboarding.onboardingScreen
 import com.example.myfirstapp.screens.register.RegisterScreen
@@ -63,6 +64,9 @@ fun AppNavHost(
         composable(ROUTE_UPDATEPRODUCT + "/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId") ?: ""
             updateproductScreen(navController, productId = productId)
+        }
+        composable (ROUTE_INTENT ){
+            Intentscreen(navController)
         }
     }
 }

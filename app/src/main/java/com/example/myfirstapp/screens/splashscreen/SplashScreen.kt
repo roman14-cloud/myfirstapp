@@ -26,7 +26,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun SplashScreen(navController: NavHostController) {
     LaunchedEffect(true) {
-        delay(3000) //3 seconds delay
+        delay(2000) //3 seconds delay
         navController.navigate(ROUTE_ONBOARDING)
     }
 
@@ -38,15 +38,16 @@ fun SplashScreen(navController: NavHostController) {
     ){
         //logo
         Image(
-            painter = painterResource(id=R.drawable.nat),
-            contentDescription = "nat",
+            painter = painterResource(id=R.drawable.free),
+            contentDescription = "free",
             modifier = Modifier
+                .fillMaxSize()
                 .size(200.dp)
                 .clip(CircleShape)
             )
         //app name
                Text(
-                   text = "WELCOME",
+                   text = "FREE DELIVERY SERVICE",
                    color=yelllogreen,
                    fontSize = 30.sp)
 

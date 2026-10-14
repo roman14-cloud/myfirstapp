@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.myfirstapp.navigations.ROUTE_ADDPRODUCT
+import com.example.myfirstapp.navigations.ROUTE_INTENT
 import com.example.myfirstapp.navigations.ROUTE_PRODUCTLIST
 import com.example.myfirstapp.viewModel.AuthViewModel
 
@@ -131,6 +132,12 @@ fun Dashboardscreen(navController: NavHostController){
                     title = "product list",
                     background = Color(0xFF2C3030),
                     onClick = {navController.navigate(ROUTE_PRODUCTLIST) }
+                )
+                DashboarCard(
+                    title = "intent",
+                    background = Color.Gray,
+                    onClick = {navController.navigate(ROUTE_INTENT)}
+
                 )
 
             }
